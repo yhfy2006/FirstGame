@@ -14,6 +14,8 @@
 		FCF9CFA91D14990E00A09477 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FCF9CFA71D14990E00A09477 /* Main.storyboard */; };
 		FCF9CFAB1D14990E00A09477 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FCF9CFAA1D14990E00A09477 /* Assets.xcassets */; };
 		FCF9CFAE1D14990E00A09477 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FCF9CFAC1D14990E00A09477 /* LaunchScreen.storyboard */; };
+		FCF9CFB61D149C9600A09477 /* GameOverScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF9CFB51D149C9600A09477 /* GameOverScene.swift */; };
+		FCF9CFB81D149C9E00A09477 /* sprites.atlas in Resources */ = {isa = PBXBuildFile; fileRef = FCF9CFB71D149C9E00A09477 /* sprites.atlas */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,8 @@
 		FCF9CFAA1D14990E00A09477 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FCF9CFAD1D14990E00A09477 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FCF9CFAF1D14990E00A09477 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FCF9CFB51D149C9600A09477 /* GameOverScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameOverScene.swift; sourceTree = "<group>"; };
+		FCF9CFB71D149C9E00A09477 /* sprites.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = sprites.atlas; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,10 +62,12 @@
 		FCF9CF9E1D14990E00A09477 /* GameGame! */ = {
 			isa = PBXGroup;
 			children = (
+				FCF9CFB71D149C9E00A09477 /* sprites.atlas */,
 				FCF9CF9F1D14990E00A09477 /* AppDelegate.swift */,
 				FCF9CFA11D14990E00A09477 /* GameScene.sks */,
 				FCF9CFA31D14990E00A09477 /* GameScene.swift */,
 				FCF9CFA51D14990E00A09477 /* GameViewController.swift */,
+				FCF9CFB51D149C9600A09477 /* GameOverScene.swift */,
 				FCF9CFA71D14990E00A09477 /* Main.storyboard */,
 				FCF9CFAA1D14990E00A09477 /* Assets.xcassets */,
 				FCF9CFAC1D14990E00A09477 /* LaunchScreen.storyboard */,
@@ -128,6 +134,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FCF9CFB81D149C9E00A09477 /* sprites.atlas in Resources */,
 				FCF9CFA21D14990E00A09477 /* GameScene.sks in Resources */,
 				FCF9CFAE1D14990E00A09477 /* LaunchScreen.storyboard in Resources */,
 				FCF9CFAB1D14990E00A09477 /* Assets.xcassets in Resources */,
@@ -144,6 +151,7 @@
 			files = (
 				FCF9CFA41D14990E00A09477 /* GameScene.swift in Sources */,
 				FCF9CFA61D14990E00A09477 /* GameViewController.swift in Sources */,
+				FCF9CFB61D149C9600A09477 /* GameOverScene.swift in Sources */,
 				FCF9CFA01D14990E00A09477 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -294,6 +302,7 @@
 				FCF9CFB41D14990E00A09477 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
