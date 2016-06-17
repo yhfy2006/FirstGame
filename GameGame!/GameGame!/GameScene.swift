@@ -64,7 +64,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // 4
         addChild(player)
         
-        physicsWorld.gravity = CGVectorMake(0, -100)
+        physicsWorld.gravity = CGVectorMake(0,0)
         physicsWorld.contactDelegate = self
         
         runAction(SKAction.repeatActionForever(
@@ -74,6 +74,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 ])
             ))
         
+        // create walls
+        let leftWall = SKSpriteNode(color: UIColor.redColor(), size: CGSizeMake(5.0, 10000))
+        leftWall.physicsBody = SKPhysicsBody.init(edgeLoopFromRect: CGRectMake(0.0, 0.0, 1.0, CGRectGetHeight(self.frame)))
+        addChild(leftWall)
+        
+        let rightWall = SKSpriteNode(color: UIColor.redColor(), size: CGSizeMake(5.0, 10000))
+        rightWall.physicsBody = SKPhysicsBody.init(edgeLoopFromRect: CGRectMake(0.0, 0.0, 1.0, CGRectGetHeight(self.frame)))
+        addChild(rightWall)
 //        let backgroundMusic = SKAudioNode(fileNamed: "background-music-aac.caf")
 //        backgroundMusic.autoplayLooped = true
 //        addChild(backgroundMusic)
@@ -179,6 +187,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func didBeginContact(contact: SKPhysicsContact) {
         
+        return
         // 1
         var firstBody: SKPhysicsBody
         var secondBody: SKPhysicsBody
