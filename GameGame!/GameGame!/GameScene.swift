@@ -51,40 +51,53 @@ extension CGPoint {
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // 1
-    let player = SKSpriteNode(imageNamed: "player")
+    let player = SKSpriteNode(imageNamed: "projectile")
     var monstersDestroyed = 0
+    
+    var playerPosition = 0 // 1 = left 2 = right
     
     override func didMoveToView(view: SKView) {
         // 2
         backgroundColor = SKColor.whiteColor()
         // 3
-        player.position = CGPoint(x: size.width * 0.1, y: size.height * 0.5)
+        player.position = CGPoint(x: size.width / 2, y: 0)
         player.physicsBody = SKPhysicsBody(rectangleOfSize: player.size) // 1
-        player.physicsBody?.dynamic = false // 2
+        player.physicsBody?.dynamic = true // 2
         // 4
         addChild(player)
         
         physicsWorld.gravity = CGVectorMake(0,0)
-        physicsWorld.contactDelegate = self
+        self.physicsWorld.contactDelegate = self
         
-        runAction(SKAction.repeatActionForever(
-            SKAction.sequence([
-                SKAction.runBlock(addMonster),
-                SKAction.waitForDuration(1.0)
-                ])
-            ))
-        
-        // create walls
-        let leftWall = SKSpriteNode(color: UIColor.redColor(), size: CGSizeMake(5.0, 10000))
-        leftWall.physicsBody = SKPhysicsBody.init(edgeLoopFromRect: CGRectMake(0.0, 0.0, 1.0, CGRectGetHeight(self.frame)))
+//        runAction(SKAction.repeatActionForever(
+//            SKAction.sequence([
+//                SKAction.runBlock(addMonster),
+//                SKAction.waitForDuration(1.0)
+//                ])
+//            ))
+
+        let leftPath = CGPathCreateMutable()
+        CGPathMoveToPoint(leftPath, nil, 0, 0)
+        CGPathAddLineToPoint(leftPath, nil, 0, self.frame.height)
+        let leftWall = SKShapeNode()
+        leftWall.path = leftPath
+        leftWall.strokeColor = UIColor.redColor()
+        leftWall.lineWidth = 5
+        leftWall.physicsBody = SKPhysicsBody.init(edgeLoopFromPath: leftPath);
+        leftWall.physicsBody?.dynamic = true
         addChild(leftWall)
         
-        let rightWall = SKSpriteNode(color: UIColor.redColor(), size: CGSizeMake(5.0, 10000))
-        rightWall.physicsBody = SKPhysicsBody.init(edgeLoopFromRect: CGRectMake(0.0, 0.0, 1.0, CGRectGetHeight(self.frame)))
+        let rightPath = CGPathCreateMutable()
+        CGPathMoveToPoint(rightPath, nil, self.frame.width, 0)
+        CGPathAddLineToPoint(rightPath, nil, self.frame.width, self.frame.height)
+        let rightWall = SKShapeNode()
+        rightWall.path = rightPath
+        rightWall.strokeColor = UIColor.greenColor()
+        rightWall.lineWidth = 5
+        rightWall.physicsBody = SKPhysicsBody.init(edgeLoopFromPath: rightPath);
+        rightWall.physicsBody?.dynamic = true
         addChild(rightWall)
-//        let backgroundMusic = SKAudioNode(fileNamed: "background-music-aac.caf")
-//        backgroundMusic.autoplayLooped = true
-//        addChild(backgroundMusic)
+        
         
     }
     
@@ -96,84 +109,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         return random() * (max - min) + min
     }
     
-    func addMonster() {
-        
-        // Create sprite
-        let monster = SKSpriteNode(imageNamed: "monster")
-        
-        monster.physicsBody = SKPhysicsBody(rectangleOfSize: monster.size) // 1
-        monster.physicsBody?.dynamic = true // 2
-        monster.physicsBody?.categoryBitMask = PhysicsCategory.Monster // 3
-        monster.physicsBody?.contactTestBitMask = PhysicsCategory.Projectile // 4
-        monster.physicsBody?.collisionBitMask = PhysicsCategory.None // 5
-        
-        // Determine where to spawn the monster along the Y axis
-        let actualY = random(min: monster.size.height/2, max: size.height - monster.size.height/2)
-        
-        // Position the monster slightly off-screen along the right edge,
-        // and along a random position along the Y axis as calculated above
-        monster.position = CGPoint(x: size.width + monster.size.width/2, y: actualY)
-        
-        // Add the monster to the scene
-        addChild(monster)
-        
-        // Determine speed of the monster
-        let actualDuration = random(min: CGFloat(2.0), max: CGFloat(4.0))
-        
-        // Create the actions
-        let actionMove = SKAction.moveTo(CGPoint(x: -monster.size.width/2, y: actualY), duration: NSTimeInterval(actualDuration))
-        let actionMoveDone = SKAction.removeFromParent()
-        let loseAction = SKAction.runBlock() {
-            let reveal = SKTransition.flipHorizontalWithDuration(0.5)
-            let gameOverScene = GameOverScene(size: self.size, won: false)
-            self.view?.presentScene(gameOverScene, transition: reveal)
-        }
-        //monster.runAction(SKAction.sequence([actionMove, loseAction, actionMoveDone]))
-        monster.runAction(SKAction.sequence([actionMove, actionMoveDone]))
-
-    }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         
         // 1 - Choose one of the touches to work with
-        guard let touch = touches.first else {
+        guard touches.first != nil else {
             return
         }
-        let touchLocation = touch.locationInNode(self)
+       // let touchLocation = touch.locationInNode(self)
         
-        // 2 - Set up initial location of projectile
-        let projectile = SKSpriteNode(imageNamed: "projectile")
-        projectile.position = player.position
-        
-        projectile.physicsBody = SKPhysicsBody(circleOfRadius: projectile.size.width/2)
-        projectile.physicsBody?.dynamic = true
-        projectile.physicsBody?.categoryBitMask = PhysicsCategory.Projectile
-        projectile.physicsBody?.contactTestBitMask = PhysicsCategory.Monster
-        projectile.physicsBody?.collisionBitMask = PhysicsCategory.None
-        projectile.physicsBody?.usesPreciseCollisionDetection = true
-        
-        // 3 - Determine offset of location to projectile
-        let offset = touchLocation - projectile.position
-        
-        // 4 - Bail out if you are shooting down or backwards
-        if (offset.x < 0) { return }
-        
-        // 5 - OK to add now - you've double checked position
-        addChild(projectile)
-        
-        // 6 - Get the direction of where to shoot
-        let direction = offset.normalized()
-        
-        // 7 - Make it shoot far enough to be guaranteed off screen
-        let shootAmount = direction * 1000
-        
-        // 8 - Add the shoot amount to the current position
-        let realDest = shootAmount + projectile.position
+        var dest = CGPointMake(0,0)
+        let dy:CGFloat = 60
+        if(playerPosition == 0) // center
+        {
+             dest = CGPointMake(0, player.position.y+dy)
+            playerPosition = 1
+        }else if(playerPosition == 1) // left
+        {
+             dest = CGPointMake(size.width, player.position.y+dy)
+             playerPosition = 2
+        }else // right
+        {
+             dest = CGPointMake(0, player.position.y+dy)
+             playerPosition = 1
+        }
+    
         
         // 9 - Create the actions
-        let actionMove = SKAction.moveTo(realDest, duration: 2.0)
-        let actionMoveDone = SKAction.removeFromParent()
-        projectile.runAction(SKAction.sequence([actionMove, actionMoveDone]))
+        let actionMove = SKAction.moveTo(dest, duration: 0.5)
+        //let actionMoveDone = SKAction.removeFromParent()
+        player.runAction(SKAction.sequence([actionMove]))
         
         runAction(SKAction.playSoundFileNamed("pew-pew-lei.caf", waitForCompletion: false))
         
