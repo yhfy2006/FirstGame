@@ -12,8 +12,9 @@ import GameplayKit
 struct PhysicsCategory {
     static let None      : UInt32 = 0
     static let All       : UInt32 = UInt32.max
-    static let Monster   : UInt32 = 0b1       // 1
-    static let Projectile: UInt32 = 0b10      // 2
+    static let Player      : UInt32 = 0b1       // 1
+    static let Wall      : UInt32 = 0b10      // 2
+    static let Other     : UInt32 = 0b11      // 3
 }
 
 func + (left: CGPoint, right: CGPoint) -> CGPoint {
@@ -63,8 +64,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.position = CGPoint(x: size.width / 2, y: 0)
         player.physicsBody = SKPhysicsBody(rectangleOfSize: player.size) // 1
         player.physicsBody?.dynamic = true // 2
+        player.physicsBody?.categoryBitMask = PhysicsCategory.Player
         // 4
         addChild(player)
+        
+        
         
         physicsWorld.gravity = CGVectorMake(0,0)
         self.physicsWorld.contactDelegate = self
@@ -85,6 +89,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         leftWall.lineWidth = 5
         leftWall.physicsBody = SKPhysicsBody.init(edgeLoopFromPath: leftPath);
         leftWall.physicsBody?.dynamic = true
+        leftWall.physicsBody?.categoryBitMask = PhysicsCategory.Wall
+        
+        leftWall.physicsBody?.contactTestBitMask = PhysicsCategory.Player  //Contact will be detected when red or green ball hit the wall
+        leftWall.physicsBody?.categoryBitMask = PhysicsCategory.Wall
+        leftWall.physicsBody?.collisionBitMask = PhysicsCategory.Player
         addChild(leftWall)
         
         let rightPath = CGPathCreateMutable()
@@ -96,6 +105,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         rightWall.lineWidth = 5
         rightWall.physicsBody = SKPhysicsBody.init(edgeLoopFromPath: rightPath);
         rightWall.physicsBody?.dynamic = true
+        rightWall.physicsBody?.contactTestBitMask = PhysicsCategory.Player  //Contact will be detected when red or green ball hit the wall
+        rightWall.physicsBody?.categoryBitMask = PhysicsCategory.Wall
+        rightWall.physicsBody?.collisionBitMask = PhysicsCategory.Player
         addChild(rightWall)
         
         
@@ -140,7 +152,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //let actionMoveDone = SKAction.removeFromParent()
         player.runAction(SKAction.sequence([actionMove]))
         
-        runAction(SKAction.playSoundFileNamed("pew-pew-lei.caf", waitForCompletion: false))
+        //runAction(SKAction.playSoundFileNamed("pew-pew-lei.caf", waitForCompletion: false))
         
     }
     
@@ -152,8 +164,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func didBeginContact(contact: SKPhysicsContact) {
         
-        return
-        // 1
+        //return
         var firstBody: SKPhysicsBody
         var secondBody: SKPhysicsBody
         if contact.bodyA.categoryBitMask < contact.bodyB.categoryBitMask {
@@ -164,18 +175,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             secondBody = contact.bodyA
         }
         
-        // 2
-        if ((firstBody.categoryBitMask & PhysicsCategory.Monster != 0) &&
-            (secondBody.categoryBitMask & PhysicsCategory.Projectile != 0)) {
-            projectileDidCollideWithMonster(firstBody.node as! SKSpriteNode, monster: secondBody.node as! SKSpriteNode)
-        }
-        
-        monstersDestroyed++
-        if (monstersDestroyed > 30) {
-            let reveal = SKTransition.flipHorizontalWithDuration(0.5)
-            let gameOverScene = GameOverScene(size: self.size, won: true)
-            self.view?.presentScene(gameOverScene, transition: reveal)
-        }
+//        if ((firstBody.categoryBitMask & PhysicsCategory.Monster != 0) &&
+//            (secondBody.categoryBitMask & PhysicsCategory.Projectile != 0)) {
+//            projectileDidCollideWithMonster(firstBody.node as! SKSpriteNode, monster: secondBody.node as! SKSpriteNode)
+//        }
+//        
+//        monstersDestroyed++
+//        if (monstersDestroyed > 30) {
+//            let reveal = SKTransition.flipHorizontalWithDuration(0.5)
+//            let gameOverScene = GameOverScene(size: self.size, won: true)
+//            self.view?.presentScene(gameOverScene, transition: reveal)
+//        }
         
         
     }
