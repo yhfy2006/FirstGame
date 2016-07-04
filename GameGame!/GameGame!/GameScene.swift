@@ -11,10 +11,10 @@ import GameplayKit
 
 struct PhysicsCategory {
     static let None      : UInt32 = 0
-    static let All       : UInt32 = UInt32.max
-    static let Player      : UInt32 = 0b1       // 1
+    static let Player      : UInt32 = 0b1      // 1
     static let Wall      : UInt32 = 0b10      // 2
     static let Other     : UInt32 = 0b11      // 3
+    static let All       : UInt32 = UInt32.max
 }
 
 func + (left: CGPoint, right: CGPoint) -> CGPoint {
@@ -63,14 +63,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // 3
         player.position = CGPoint(x: size.width / 2, y: 0)
         player.physicsBody = SKPhysicsBody(rectangleOfSize: player.size) // 1
-        player.physicsBody?.dynamic = true // 2
+        player.physicsBody?.dynamic = false // 2
         player.physicsBody?.categoryBitMask = PhysicsCategory.Player
         // 4
         addChild(player)
         
         
         
-        physicsWorld.gravity = CGVectorMake(0,0)
+        physicsWorld.gravity = CGVectorMake(0,-0.5)
         self.physicsWorld.contactDelegate = self
         
 //        runAction(SKAction.repeatActionForever(
@@ -129,7 +129,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             return
         }
        // let touchLocation = touch.locationInNode(self)
-        
+        player.physicsBody?.dynamic = false // 2
+
         var dest = CGPointMake(0,0)
         let dy:CGFloat = 60
         if(playerPosition == 0) // center
@@ -138,7 +139,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             playerPosition = 1
         }else if(playerPosition == 1) // left
         {
-             dest = CGPointMake(size.width, player.position.y+dy)
+             dest = CGPointMake(size.width-20, player.position.y+dy)
              playerPosition = 2
         }else // right
         {
@@ -152,14 +153,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //let actionMoveDone = SKAction.removeFromParent()
         player.runAction(SKAction.sequence([actionMove]))
         
-        //runAction(SKAction.playSoundFileNamed("pew-pew-lei.caf", waitForCompletion: false))
-        
     }
     
     func projectileDidCollideWithMonster(projectile:SKSpriteNode, monster:SKSpriteNode) {
         print("Hit")
         projectile.removeFromParent()
         monster.removeFromParent()
+    }
+    
+    func playerStartToFall(playerNode:SKSpriteNode) {
+        player.physicsBody?.dynamic = true
+        playerNode.removeAllActions();
     }
     
     func didBeginContact(contact: SKPhysicsContact) {
@@ -173,6 +177,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             firstBody = contact.bodyB
             secondBody = contact.bodyA
+        }
+        
+        let collision: UInt32 = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
+        if collision == PhysicsCategory.Wall | PhysicsCategory.Player {
+            playerStartToFall(firstBody.node as! SKSpriteNode)
         }
         
 //        if ((firstBody.categoryBitMask & PhysicsCategory.Monster != 0) &&
