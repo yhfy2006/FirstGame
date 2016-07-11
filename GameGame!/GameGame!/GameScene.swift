@@ -14,6 +14,8 @@ struct PhysicsCategory {
     static let Player      : UInt32 = 0b1      // 1
     static let Wall      : UInt32 = 0b10      // 2
     static let Pipes     : UInt32 = 0b11      // 3
+    static let Score     : UInt32 = 0b111
+    static let World     : UInt32 = 0b1111
     static let All       : UInt32 = UInt32.max
 }
 
@@ -67,8 +69,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     var moving:SKNode = SKNode()
     
+    var pipes = SKNode()
     
-    let kVerticalPipeGap = 100
+    
+    let kVerticalPipeGap = CGFloat(100)
+    
+    var score = 0
+    var scoreLabelNode:SKLabelNode?
+    
+    var canRestart = false
     
     override func didMoveToView(view: SKView) {
 
@@ -113,6 +122,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             moving.addChild(sprite)
         }
         
+        // add pipes
+        moving.addChild(pipes)
         
         
         // Create skyline
@@ -155,8 +166,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         movePipiesAndRemove = SKAction.sequence([movePipes,removePipes])
         
         let spawnAction = SKAction.performSelector(Selector("spawnPipes"), onTarget: self)
+        let delayAction = SKAction.waitForDuration(2.0)
+        let spawnThenDelay = SKAction.sequence([spawnAction,delayAction])
+        let spawnThenDelayForever = SKAction.repeatActionForever(spawnThenDelay)
+        self.runAction(spawnThenDelayForever)
         
-
+        scoreLabelNode = SKLabelNode(fontNamed: "MarkerFelt-Wide")
+        scoreLabelNode?.position = CGPointMake(CGRectGetMidX(self.frame), self.frame.size.height * 3 / 4)
+        scoreLabelNode?.zPosition = 100
+        scoreLabelNode?.text = "\(self.score)"
+        self.addChild(scoreLabelNode!)
         
     }
     
@@ -178,7 +197,28 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         piperPaire.addChild(pipe1)
         
-        let pip2 = SKSpriteNode(texture: piper2Texture)
+        let pipe2 = SKSpriteNode(texture: piper2Texture)
+        pipe2.setScale(2)
+        pipe2.position = CGPointMake(0, CGFloat(y) + pipe1.size.height + kVerticalPipeGap)
+        pipe2.physicsBody = SKPhysicsBody(rectangleOfSize: pipe2.size)
+        pipe2.physicsBody?.dynamic = false
+        pipe2.physicsBody?.categoryBitMask = PhysicsCategory.Pipes
+        pipe2.physicsBody?.contactTestBitMask = PhysicsCategory.Pipes
+        
+        piperPaire.addChild(pipe2)
+        
+        let contactNode = SKNode()
+        contactNode.position = CGPointMake(pipe1.size.width + self.player!.size.width/2, CGRectGetMidY(self.frame))
+        contactNode.physicsBody = SKPhysicsBody(rectangleOfSize: CGSizeMake(pipe2.size.width, self.frame.size.height))
+        contactNode.physicsBody?.dynamic = false
+        contactNode.physicsBody?.categoryBitMask = PhysicsCategory.Score
+        contactNode.physicsBody?.contactTestBitMask = PhysicsCategory.Score
+        
+        piperPaire.addChild(contactNode)
+        piperPaire.runAction(movePipiesAndRemove!)
+        
+        pipes.addChild(piperPaire)
+        
         
     }
     
@@ -190,6 +230,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         return random() * (max - min) + min
     }
     
+    func resetScene() {
+        player?.position = CGPointMake(self.frame.size.width / 4, CGRectGetMidY(self.frame))
+        player?.physicsBody?.velocity = CGVectorMake(0, 0)
+        player?.physicsBody?.collisionBitMask = PhysicsCategory.World | PhysicsCategory.Pipes
+        player?.speed = 1.0
+        player?.zRotation = 0.0
+        
+        pipes.removeAllChildren()
+        canRestart = false
+        
+        moving.speed = 1
+        
+        score = 0
+        scoreLabelNode?.text = "\(score)"
+    }
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if moving.speed > 0
+        {
+            player?.physicsBody?.velocity = CGVectorMake(0, 0)
+            player?.physicsBody?.applyImpulse(CGVectorMake(0, 4))
+        }else if canRestart
+        {
+           resetScene()
+        }
+    }
     
     override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         
